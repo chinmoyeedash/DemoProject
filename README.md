@@ -1,4 +1,4 @@
-# PlayersDemoProject
+# Memes Demo
 
 Key Features:
 
@@ -6,3 +6,4 @@ Key Features:
 ##  Koin Dependency Injection
 ##  Retrofit + coroutines
 ##  Kotlin 
+##  Testing 
