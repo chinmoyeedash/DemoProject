@@ -9,9 +9,13 @@ import com.sample.app.domain.models.IPagingModel
 import com.sample.app.domain.usecase.GetMemesFlowUseCase
 import com.sample.app.domain.usecase.GetMemesUseCase
 import com.sample.app.presentation.utils.SingleLiveData
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import javax.inject.Inject
 
-class MemesViewModel @OptIn(ExperimentalCoroutinesApi::class) constructor(
+@ExperimentalCoroutinesApi
+@HiltViewModel
+class MemesViewModel @Inject constructor(
   private val getMemesUseCase: GetMemesUseCase,
   private val getMemesFlowUseCase: GetMemesFlowUseCase
 ) : ViewModel() {

@@ -3,7 +3,7 @@
 Key Features:
 
 ##  MVVM + Clean Architecture
-##  Koin Dependency Injection
+##  Hilt Dependency Injection
 ##  Retrofit + coroutines
 ##  Kotlin 
 ##  Testing 

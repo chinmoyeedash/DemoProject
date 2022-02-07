@@ -16,8 +16,11 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.sample.app.R
 import com.sample.app.databinding.FragmentHomeListBinding
@@ -27,17 +30,19 @@ import com.sample.app.presentation.extension.hide
 import com.sample.app.presentation.extension.observe
 import com.sample.app.presentation.extension.show
 import com.sample.app.presentation.ui.home.memes.MemesAdapter
-import org.koin.androidx.viewmodel.ext.android.viewModel
-
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 /**
  * A fragment representing a list of Items.
  */
+@ExperimentalCoroutinesApi
+@AndroidEntryPoint
 class HomeFragment : Fragment(), MemesAdapter.ItemListener {
 
   private var adapter: MemesAdapter? = null
   private lateinit var binding: FragmentHomeListBinding
-  private val viewModel: MemesViewModel by viewModel()
+  private val viewModel: MemesViewModel by viewModels()
 
   private var currentAnimator: Animator? = null
 

@@ -4,6 +4,7 @@ plugins {
     id 'androidx.navigation.safeargs.kotlin'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -72,13 +73,19 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.8.1'
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
-    //Koin
-    implementation "io.insert-koin:koin-core:$koin_version"
-    // Koin for Android
-    implementation "io.insert-koin:koin-android:$koin_version"
-    testImplementation "io.insert-koin:koin-test:$koin_version"
-    // Navigation Graph
-    implementation "io.insert-koin:koin-androidx-navigation:$koin_version"
+    //Hilt
+    implementation 'com.google.dagger:hilt-android:2.40.5'
+    kapt 'com.google.dagger:hilt-compiler:2.40.5'
+    // Hilt Jetpack Integrations
+    implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
+    annotationProcessor 'androidx.hilt:hilt-compiler:1.0.0'
+    // For instrumentation tests
+    androidTestImplementation  'com.google.dagger:hilt-android-testing:2.40.5'
+    kaptAndroidTest 'com.google.dagger:hilt-compiler:2.40.5'
+
+    // For local unit tests
+    testImplementation 'com.google.dagger:hilt-android-testing:2.40.5'
+    kaptTest 'com.google.dagger:hilt-compiler:2.40.5'
 
     //Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
@@ -100,4 +107,8 @@ dependencies {
     testImplementation 'org.mockito:mockito-inline:3.9.0'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0-RC"
 
+}
+
+kapt {
+    correctErrorTypes true
 }

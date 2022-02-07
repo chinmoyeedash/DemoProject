@@ -7,10 +7,12 @@ import com.sample.app.domain.repository.ISampleRepository
 import com.sample.app.domain.usecase.base.FlowUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-
+@Singleton
 @ExperimentalCoroutinesApi
-class GetMemesFlowUseCase constructor(
+class GetMemesFlowUseCase @Inject constructor(
   private val repository: ISampleRepository
 ) : FlowUseCase<Unit, PagingData<IPagingModel>>() {
   override suspend fun run(params: Unit): Flow<PagingData<IPagingModel>> {
