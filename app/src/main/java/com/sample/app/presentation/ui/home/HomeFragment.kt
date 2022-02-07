@@ -45,6 +45,9 @@ class HomeFragment : Fragment(), MemesAdapter.ItemListener {
   private val viewModel: MemesViewModel by viewModels()
 
   private var currentAnimator: Animator? = null
+  private var currentThumbView: View? = null
+  private lateinit var startBounds: RectF
+  private var startScale: Float = 0f
 
   // The system "short" animation time duration, in milliseconds. This
   // duration is ideal for subtle animations or animations that occur
@@ -85,20 +88,33 @@ class HomeFragment : Fragment(), MemesAdapter.ItemListener {
     observe(viewModel.showProgressbar) { show ->
       binding.progressBar.visibility = if (show == true) VISIBLE else GONE
     }
+
+    activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+      override fun handleOnBackPressed() {
+        if(binding.expandedImage.isVisible) hideExpandedImage()
+        else {
+          this.isEnabled = false
+          activity?.onBackPressed()
+        }
+      }
+    })
   }
 
   private fun initAdapter() {
     adapter = MemesAdapter()
     adapter?.setListener(this)
     binding.list.adapter = adapter
-      //saves scroll position on configuration change
-    binding.list.adapter?.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+    //saves scroll position on configuration change
+    binding.list.adapter?.stateRestorationPolicy =
+      RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
   }
 
   override fun onDestroyView() {
     super.onDestroyView()
     adapter = null
+    currentThumbView = null
+    currentAnimator = null
   }
 
 
@@ -113,6 +129,7 @@ class HomeFragment : Fragment(), MemesAdapter.ItemListener {
   }
 
   private fun zoomImageFromThumb(thumbView: View, url: String?) {
+    currentThumbView = thumbView
     // If there's an animation in progress, cancel it
     // immediately and proceed with this one.
     currentAnimator?.cancel()
@@ -137,14 +154,13 @@ class HomeFragment : Fragment(), MemesAdapter.ItemListener {
     startBoundsInt.offset(-globalOffset.x, -globalOffset.y)
     finalBoundsInt.offset(-globalOffset.x, -globalOffset.y)
 
-    val startBounds = RectF(startBoundsInt)
+    startBounds = RectF(startBoundsInt)
     val finalBounds = RectF(finalBoundsInt)
 
     // Adjust the start bounds to be the same aspect ratio as the final
     // bounds using the "center crop" technique. This prevents undesirable
     // stretching during the animation. Also calculate the start scaling
     // factor (the end scaling factor is always 1.0).
-    val startScale: Float
     if ((finalBounds.width() / finalBounds.height() > startBounds.width() / startBounds.height())) {
       // Extend start bounds horizontally
       startScale = startBounds.height() / finalBounds.height()
@@ -179,11 +195,19 @@ class HomeFragment : Fragment(), MemesAdapter.ItemListener {
       play(
         ObjectAnimator.ofFloat(
           binding.expandedImage,
-        View.X,
-        startBounds.left,
-        finalBounds.left)
+          View.X,
+          startBounds.left,
+          finalBounds.left
+        )
       ).apply {
-        with(ObjectAnimator.ofFloat(binding.expandedImage, View.Y, startBounds.top, finalBounds.top))
+        with(
+          ObjectAnimator.ofFloat(
+            binding.expandedImage,
+            View.Y,
+            startBounds.top,
+            finalBounds.top
+          )
+        )
         with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_X, startScale, 1f))
         with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_Y, startScale, 1f))
       }
@@ -206,34 +230,41 @@ class HomeFragment : Fragment(), MemesAdapter.ItemListener {
     // to the original bounds and show the thumbnail instead of
     // the expanded image.
     binding.expandedImage.setOnClickListener {
-      currentAnimator?.cancel()
-
-      // Animate the four positioning/sizing properties in parallel,
-      // back to their original values.
-      currentAnimator = AnimatorSet().apply {
-        play(ObjectAnimator.ofFloat(binding.expandedImage, View.X, startBounds.left)).apply {
-          with(ObjectAnimator.ofFloat(binding.expandedImage, View.Y, startBounds.top))
-          with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_X, startScale))
-          with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_Y, startScale))
-        }
-        duration = shortAnimationDuration.toLong()
-        interpolator = DecelerateInterpolator()
-        addListener(object : AnimatorListenerAdapter() {
-
-          override fun onAnimationEnd(animation: Animator) {
-            thumbView.alpha = 1f
-            binding.expandedImage.hide()
-            currentAnimator = null
-          }
-
-          override fun onAnimationCancel(animation: Animator) {
-            thumbView.alpha = 1f
-            binding.expandedImage.hide()
-            currentAnimator = null
-          }
-        })
-        start()
-      }
+        hideExpandedImage()
     }
   }
+
+  private fun hideExpandedImage() {
+    currentAnimator?.cancel()
+
+    // Animate the four positioning/sizing properties in parallel,
+    // back to their original values.
+    currentAnimator = AnimatorSet().apply {
+      play(ObjectAnimator.ofFloat(binding.expandedImage, View.X, startBounds.left)).apply {
+        with(ObjectAnimator.ofFloat(binding.expandedImage, View.Y, startBounds.top))
+        with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_X, startScale))
+        with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_Y, startScale))
+      }
+      duration = shortAnimationDuration.toLong()
+      interpolator = DecelerateInterpolator()
+      addListener(object : AnimatorListenerAdapter() {
+
+        override fun onAnimationEnd(animation: Animator) {
+          currentThumbView?.alpha = 1f
+          binding.expandedImage.hide()
+          currentAnimator = null
+        }
+
+        override fun onAnimationCancel(animation: Animator) {
+          currentThumbView?.alpha = 1f
+          binding.expandedImage.hide()
+          currentAnimator = null
+        }
+      })
+      start()
+    }
+  }
+
+
+
 }
